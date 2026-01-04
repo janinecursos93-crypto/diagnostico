@@ -41,15 +41,22 @@
 </head>
 <body class="p-4 md:p-8 selection:bg-rosaAntigo">
 
+    <div id="api-config" class="max-w-4xl mx-auto mb-4 text-right">
+        <button onclick="document.getElementById('api-modal').classList.toggle('hidden')" class="text-[10px] text-gray-400 uppercase tracking-widest hover:text-terracota transition-colors">⚙️ Configurar API</button>
+        <div id="api-modal" class="hidden mt-2 p-4 bg-white border border-rosaAntigo/20 rounded-2xl shadow-xl inline-block text-left">
+            <label class="block text-[10px] font-bold mb-2">Chave Gemini API:</label>
+            <input type="password" id="api-key-input" placeholder="Cole sua chave aqui" class="p-2 border rounded-lg text-xs w-64 outline-none focus:ring-1 focus:ring-terracota">
+            <button onclick="saveApiKey()" class="ml-2 bg-terracota text-white px-4 py-2 rounded-lg text-[10px] font-bold uppercase">Salvar</button>
+        </div>
+    </div>
+
     <div class="max-w-4xl mx-auto space-y-12">
-        <!-- Header -->
         <header class="text-center space-y-4 pt-10">
             <span class="text-[10px] font-bold tracking-[0.4em] text-terracota uppercase">Método Estrutura da Artesã</span>
             <h1 class="font-serif text-4xl md:text-6xl text-cinzaEscuro leading-tight">Diagnóstico do <span class="italic text-terracota">Lucro Real</span></h1>
             <p class="text-gray-500 max-w-lg mx-auto text-sm md:text-base font-light">Uma análise técnica e sincera sobre a saúde financeira do seu ateliê.</p>
         </header>
 
-        <!-- Calculadora Principal -->
         <section class="bg-white rounded-[3.5rem] p-8 md:p-14 border border-rosaAntigo/20 shadow-sm relative overflow-hidden">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
                 <div class="space-y-8">
@@ -88,10 +95,7 @@
             </div>
         </section>
 
-        <!-- Resultados Unificados -->
         <div id="main-results" class="hidden space-y-12 fade-in pb-20">
-            
-            <!-- Cards de Impacto -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="bg-white p-10 rounded-[2.5rem] border border-gray-100 flex flex-col items-center justify-center text-center shadow-sm">
                     <span id="label-diff" class="text-[9px] font-bold uppercase text-gray-400 tracking-[0.2em] mb-3">Diferença de Margem</span>
@@ -103,7 +107,6 @@
                 </div>
             </div>
 
-            <!-- Parecer da Mentora IA -->
             <section class="bg-white rounded-[4rem] p-10 md:p-16 border border-rosaAntigo/30 shadow-2xl relative">
                 <div class="max-w-3xl mx-auto space-y-8">
                     <div class="flex flex-col items-center text-center gap-4">
@@ -113,16 +116,13 @@
                     </div>
 
                     <div id="ai-container" class="space-y-10">
-                        <div id="ai-loading" class="flex flex-col items-center gap-4">
+                        <div id="ai-loading" class="hidden flex flex-col items-center gap-4">
                             <div class="w-full h-24 loading-shimmer rounded-3xl"></div>
                             <p class="text-xs text-gray-400 uppercase tracking-widest">Processando contabilidade e posicionamento...</p>
                         </div>
                         
                         <div id="ai-content" class="hidden max-w-none">
-                            <!-- Injetado pela IA -->
                             <div id="ai-text" class="text-base md:text-lg text-gray-700 leading-relaxed font-normal text-center md:text-left font-sans"></div>
-                            
-                            <!-- Card de Próximo Passo -->
                             <div id="next-step-box" class="mt-12 p-8 md:p-10 bg-cinzaEscuro rounded-[3rem] text-white space-y-6 fade-in shadow-xl">
                                 <div class="flex items-center gap-3">
                                     <span class="text-rosaAntigo text-xl">✦</span>
@@ -141,7 +141,6 @@
                 </div>
             </section>
 
-            <!-- Radar Chart -->
             <div class="max-w-xl mx-auto bg-white p-12 rounded-[3.5rem] border border-gray-100 text-center space-y-8">
                 <h4 class="text-[10px] font-bold uppercase text-gray-400 tracking-[0.3em]">Radiografia Financeira</h4>
                 <div class="chart-container">
@@ -156,51 +155,54 @@
     </div>
 
     <script>
-        const apiKey = ""; 
         let chart;
 
+        function saveApiKey() {
+            const key = document.getElementById('api-key-input').value;
+            if (key) {
+                localStorage.setItem('gemini_api_key', key);
+                alert("Chave salva com sucesso no seu navegador!");
+                document.getElementById('api-modal').classList.add('hidden');
+            }
+        }
+
         async function callGemini(prompt) {
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
-            const system = `Você é Janine Borges, mentora técnica de artesãs. Use o português do Brasil.
-            Sua tarefa é ser SINCERA e MATEMATICAMENTE PRECISA. 
-            REGRAS CRÍTICAS:
-            1. Se o preço praticado é MAIOR que o ideal, você DEVE parabenizar a artesã pelo lucro extra e validar sua autoridade,mas como autoridade no assunto você pode alertar sobre preços inflacionados, e que prejuizo pode causar. Jamais diga que ela tem prejuízo se o número for positivo.
-            2. Se o preço praticado é MENOR que o ideal, mostre o prejuízo anual com firmeza e acolhimento.
-            3. Responda em no máximo 2 parágrafos curtos. Sem enrolação.
-            
-            DIRETRIZ DE RECOMENDAÇÃO:
-            - Se Prejuízo Anual (Preço Praticado < Ideal): Sugira 'A Comunicação que Vende'.
-            - Se Preço está Ideal (+- 5%): Sugira 'Planner da Artesã'.
-            - Se Preço está Premium (Preço Praticado > Ideal): Sugira 'Vitrine da Artesã'.`;
+            const apiKey = localStorage.getItem('gemini_api_key');
+            if (!apiKey) {
+                alert("Por favor, configure sua Chave de API clicando na engrenagem no topo.");
+                return null;
+            }
+
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+            const system = `Você é Janine Borges, mentora técnica de artesãs. Use o português do Brasil. Sua tarefa é ser SINCERA e MATEMATICAMENTE PRECISA. REGRAS CRÍTICAS: 1. Se o preço praticado é MAIOR que o ideal, parabenize pelo lucro extra. 2. Se for MENOR, mostre o prejuízo anual com firmeza e acolhimento. 3. Responda em no máximo 2 parágrafos curtos.`;
 
             const payload = {
                 contents: [{ parts: [{ text: prompt }] }],
                 systemInstruction: { parts: [{ text: system }] },
-                generationConfig: { responseMimeType: "application/json", responseSchema: {
-                    type: "OBJECT",
-                    properties: {
-                        diagnostico: { type: "string" },
-                        produto_nome: { type: "string" },
-                        produto_motivo: { type: "string" },
-                        produto_link_label: { type: "string" }
-                    },
-                    required: ["diagnostico", "produto_nome", "produto_motivo", "produto_link_label"]
-                }}
+                generationConfig: { 
+                    responseMimeType: "application/json", 
+                    responseSchema: {
+                        type: "OBJECT",
+                        properties: {
+                            diagnostico: { type: "string" },
+                            produto_nome: { type: "string" },
+                            produto_motivo: { type: "string" },
+                            produto_link_label: { type: "string" }
+                        },
+                        required: ["diagnostico", "produto_nome", "produto_motivo", "produto_link_label"]
+                    }
+                }
             };
 
-            let delay = 1000;
-            for (let i = 0; i < 5; i++) {
-                try {
-                    const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                    if (!response.ok) throw new Error();
-                    const data = await response.json();
-                    return JSON.parse(data.candidates[0].content.parts[0].text);
-                } catch (e) {
-                    await new Promise(r => setTimeout(r, delay));
-                    delay *= 2;
-                }
+            try {
+                const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                const data = await response.json();
+                return JSON.parse(data.candidates[0].content.parts[0].text);
+            } catch (e) {
+                console.error(e);
+                alert("Erro ao conectar com a IA. Verifique sua chave.");
+                return null;
             }
-            return null;
         }
 
         async function processarTudo() {
@@ -208,53 +210,27 @@
             const ideal = parseFloat(document.getElementById('ideal-price').value) || 0;
             const volume = parseInt(document.getElementById('sales-volume').value) || 0;
 
-            if (!atual || !ideal || !volume) return alert("Preencha todos os campos para uma análise real.");
+            if (!atual || !ideal || !volume) return alert("Preencha todos os campos.");
 
             const container = document.getElementById('main-results');
             const loading = document.getElementById('ai-loading');
             const content = document.getElementById('ai-content');
+            
             container.classList.remove('hidden');
             loading.classList.remove('hidden');
             content.classList.add('hidden');
 
-            const diff = atual - ideal; // POSITIVO = Lucro extra | NEGATIVO = Prejuízo
+            const diff = atual - ideal;
             const perYear = diff * volume * 12;
             const percentage = (diff / ideal) * 100;
-
             const format = (v) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
-            
-            // UI Dinâmica baseada no sinal matemático
-            const resDiffEl = document.getElementById('res-diff');
-            const resYearEl = document.getElementById('res-year');
-            const labelDiffEl = document.getElementById('label-diff');
-            const labelYearEl = document.getElementById('label-year');
 
-            resDiffEl.innerText = format(diff);
-            resYearEl.innerText = format(perYear);
+            document.getElementById('res-diff').innerText = format(diff);
+            document.getElementById('res-year').innerText = format(perYear);
             
-            if (diff >= 0) {
-                resDiffEl.classList.add('text-green-600');
-                resDiffEl.classList.remove('text-red-500');
-                resYearEl.classList.add('text-green-600');
-                resYearEl.classList.remove('text-terracota');
-                labelDiffEl.innerText = "Lucro Extra por Peça";
-                labelYearEl.innerText = "Superávit Anual Projetado";
-            } else {
-                resDiffEl.classList.remove('text-green-600');
-                resDiffEl.classList.add('text-red-500');
-                resYearEl.classList.remove('text-green-600');
-                resYearEl.classList.add('text-terracota');
-                labelDiffEl.innerText = "Perda por Peça";
-                labelYearEl.innerText = "Vazamento Anual Projetado";
-            }
-
             updateChart(percentage, ideal);
 
-            const prompt = `Analise: A artesã cobra R$ ${atual} mas o ideal é R$ ${ideal}. 
-            Isso resulta em um ${diff >= 0 ? 'LUCRO EXTRA' : 'PREJUÍZO'} de R$ ${Math.abs(diff).toFixed(2)} por peça. 
-            Impacto Anual: R$ ${perYear.toFixed(2)}. Diferença percentual: ${percentage.toFixed(2)}%. 
-            Seja técnica e valide o resultado real.`;
-            
+            const prompt = `Analise: Cobra R$ ${atual}, ideal R$ ${ideal}. Volume: ${volume}/mês. Lucro/Prejuízo: R$ ${diff}. Impacto Anual: R$ ${perYear}.`;
             const result = await callGemini(prompt);
 
             if (result) {
@@ -262,34 +238,18 @@
                 document.getElementById('rec-title').innerText = result.produto_nome;
                 document.getElementById('rec-desc').innerText = result.produto_motivo;
                 document.getElementById('rec-link').innerText = result.produto_link_label;
-                
-                const links = {
-                    'A Comunicação que Vende': '#LINK_COMUNICACAO',
-                    'QG da Artesã de Valor': '#LINK_NOTION',
-                    'Cenários Magnéticos': '#LINK_PROMPTS'
-                };
-                document.getElementById('rec-link').href = links[result.produto_nome] || "#";
-                
                 loading.classList.add('hidden');
                 content.classList.remove('hidden');
+            } else {
+                loading.classList.add('hidden');
             }
-
             container.scrollIntoView({ behavior: 'smooth' });
         }
 
         function updateChart(pct, ideal) {
             const ctx = document.getElementById('balanceChart').getContext('2d');
             if (chart) chart.destroy();
-            
-            // Pontuações dinâmicas
-            const scores = [
-                ideal > 0 ? 10 : 2, 
-                pct > 10 ? 10 : (pct < -15 ? 4 : 7), 
-                pct < -5 ? 4 : (pct > 20 ? 9 : 8), 
-                7, 
-                8 
-            ];
-
+            const scores = [ideal > 0 ? 10 : 2, pct > 10 ? 10 : 5, pct < -5 ? 4 : 8, 7, 8];
             chart = new Chart(ctx, {
                 type: 'radar',
                 data: {
@@ -298,22 +258,10 @@
                         data: scores,
                         backgroundColor: 'rgba(179, 92, 68, 0.1)',
                         borderColor: '#B35C44',
-                        pointBackgroundColor: '#B35C44',
                         borderWidth: 2
                     }]
                 },
-                options: {
-                    scales: {
-                        r: {
-                            suggestedMin: 0,
-                            suggestedMax: 10,
-                            ticks: { display: false },
-                            grid: { color: 'rgba(51, 51, 51, 0.1)' },
-                            pointLabels: { font: { family: 'Inter', size: 10, weight: 'bold' }, color: '#999' }
-                        }
-                    },
-                    plugins: { legend: { display: false } }
-                }
+                options: { scales: { r: { suggestedMin: 0, suggestedMax: 10, ticks: { display: false } } }, plugins: { legend: { display: false } } }
             });
         }
     </script>
