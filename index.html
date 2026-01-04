@@ -2,74 +2,115 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Diagnóstico do Lucro - Janine Borges</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Playfair+Display:ital@0;1&display=swap" rel="stylesheet">
     <style>
-        body { background-color: #FAF9F6; color: #333333; font-family: sans-serif; }
+        body { background-color: #FAF9F6; font-family: 'Inter', sans-serif; }
+        .font-serif { font-family: 'Playfair Display', serif; }
         .loading-shimmer { background: linear-gradient(90deg, #FAF9F6 25%, #E4C1B9 50%, #FAF9F6 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
         @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
     </style>
 </head>
 <body class="p-4 md:p-8">
-    <div class="max-w-4xl mx-auto space-y-8">
-        <header class="text-center py-10">
-            <h1 class="text-4xl font-serif text-gray-800">Diagnóstico do <span style="color:#B35C44 italic">Lucro Real</span></h1>
+
+    <div class="max-w-4xl mx-auto space-y-10">
+        <header class="text-center py-6">
+            <span class="text-[10px] font-bold tracking-[0.4em] text-[#B35C44] uppercase">Método Estrutura da Artesã</span>
+            <h1 class="font-serif text-4xl md:text-5xl text-gray-800 mt-2">Diagnóstico do <span class="italic text-[#B35C44]">Lucro Real</span></h1>
         </header>
 
-        <section class="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <input type="number" id="current-price" placeholder="Preço Atual (R$)" class="p-4 bg-gray-50 rounded-xl outline-none">
-                <input type="number" id="ideal-price" placeholder="Preço Ideal (R$)" class="p-4 bg-gray-50 rounded-xl outline-none">
-                <input type="number" id="sales-volume" placeholder="Vendas/Mês" class="p-4 bg-gray-50 rounded-xl outline-none">
+        <section class="bg-white p-8 rounded-[2.5rem] shadow-sm border border-gray-100">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2">Preço Praticado</label>
+                    <input type="number" id="current-price" placeholder="R$ 0,00" class="w-full p-4 bg-gray-50 rounded-2xl outline-none border border-transparent focus:border-[#B35C44] transition-all">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2">Preço Ideal</label>
+                    <input type="number" id="ideal-price" placeholder="R$ 0,00" class="w-full p-4 bg-gray-50 rounded-2xl outline-none border border-transparent focus:border-[#B35C44] transition-all">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2">Vendas / Mês</label>
+                    <input type="number" id="sales-volume" placeholder="Qtd" class="w-full p-4 bg-gray-50 rounded-2xl outline-none border border-transparent focus:border-[#B35C44] transition-all">
+                </div>
             </div>
-            <button onclick="gerar()" class="w-full mt-6 py-4 bg-[#B35C44] text-white font-bold rounded-xl hover:opacity-90 transition-all">GERAR DIAGNÓSTICO</button>
+            <button onclick="analisar()" class="w-full mt-6 py-5 bg-[#B35C44] text-white font-bold rounded-2xl hover:brightness-110 shadow-lg transition-all uppercase tracking-widest text-xs">
+                Gerar Diagnóstico Matemático
+            </button>
         </section>
 
-        <div id="res" class="hidden space-y-6">
+        <div id="resultado-bloco" class="hidden space-y-8 animate-fade-in">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-center">
-                <div class="bg-white p-6 rounded-2xl border border-gray-100"><p class="text-xs uppercase text-gray-400">Diferença</p><p id="d1" class="text-2xl font-bold"></p></div>
-                <div class="bg-white p-6 rounded-2xl border border-gray-100"><p class="text-xs uppercase text-gray-400">Impacto Anual</p><p id="d2" class="text-2xl font-bold"></p></div>
+                <div class="bg-white p-8 rounded-3xl border border-gray-100">
+                    <span class="text-[9px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Diferença por Peça</span>
+                    <span id="diff-val" class="text-3xl font-bold"></span>
+                </div>
+                <div class="bg-white p-8 rounded-3xl border border-gray-100">
+                    <span class="text-[9px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Impacto Financeiro Anual</span>
+                    <span id="anual-val" class="text-3xl font-bold"></span>
+                </div>
             </div>
-            <div class="bg-white p-8 rounded-3xl border border-gray-100">
-                <div id="load" class="hidden"><div class="h-12 loading-shimmer rounded-lg mb-2"></div><p class="text-center text-xs text-gray-400">Janine está escrevendo...</p></div>
-                <p id="txt" class="text-lg leading-relaxed text-gray-700"></p>
+
+            <div class="bg-white p-10 rounded-[3rem] border border-[#E4C1B9]/30 shadow-xl relative overflow-hidden text-center">
+                <h3 class="font-serif text-2xl text-gray-800 mb-6 italic">Parecer da Especialista</h3>
+                <div id="loading" class="hidden space-y-3">
+                    <div class="h-4 w-3/4 mx-auto loading-shimmer rounded"></div>
+                    <div class="h-4 w-1/2 mx-auto loading-shimmer rounded"></div>
+                    <p class="text-[10px] text-gray-400 uppercase tracking-tighter">Janine está analisando seus números...</p>
+                </div>
+                <p id="ai-text" class="text-gray-700 leading-relaxed text-lg whitespace-pre-wrap font-light"></p>
             </div>
         </div>
     </div>
 
     <script>
-        async function gerar() {
-            const v1 = parseFloat(document.getElementById('current-price').value);
-            const v2 = parseFloat(document.getElementById('ideal-price').value);
-            const v3 = parseInt(document.getElementById('sales-volume').value);
-            const key = "AIzaSyDL0qEa6Hf5yrZu_53RN1f9F4O0KSCVWfE"; // Sua chave inserida
+        async function analisar() {
+            const atual = parseFloat(document.getElementById('current-price').value);
+            const ideal = parseFloat(document.getElementById('ideal-price').value);
+            const volume = parseInt(document.getElementById('sales-volume').value);
+            const apiKey = "AIzaSyDL0qEa6Hf5yrZu_53RN1f9F4O0KSCVWfE";
 
-            if(!v1 || !v2 || !v3) return alert("Preencha tudo!");
+            if (!atual || !ideal || !volume) return alert("Por favor, preencha todos os campos.");
 
-            document.getElementById('res').classList.remove('hidden');
-            document.getElementById('load').classList.remove('hidden');
-            document.getElementById('txt').innerText = "";
+            const bloco = document.getElementById('resultado-bloco');
+            const loading = document.getElementById('loading');
+            const aiText = document.getElementById('ai-text');
+            
+            bloco.classList.remove('hidden');
+            loading.classList.remove('hidden');
+            aiText.innerText = "";
 
-            const diff = v1 - v2;
-            const anual = diff * v3 * 12;
-            document.getElementById('d1').innerText = "R$ " + diff.toFixed(2);
-            document.getElementById('d2').innerText = "R$ " + anual.toFixed(2);
+            const diff = atual - ideal;
+            const anual = diff * volume * 12;
+
+            document.getElementById('diff-val').innerText = "R$ " + diff.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+            document.getElementById('diff-val').style.color = diff >= 0 ? "#16a34a" : "#dc2626";
+            
+            document.getElementById('anual-val').innerText = "R$ " + anual.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+            document.getElementById('anual-val').style.color = anual >= 0 ? "#16a34a" : "#B35C44";
+
+            const prompt = `Você é Janine Borges, mentora de artesãs. Analise: cobra R$${atual}, o ideal é R$${ideal}. Vende ${volume}/mês. Lucro/prejuízo anual de R$${anual}. Dê um conselho técnico e acolhedor em 2 parágrafos curtos.`;
 
             try {
-                // URL CORRIGIDA PARA O FORMATO QUE FUNCIONA COM SUA CHAVE
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ contents: [{ parts: [{ text: `A artesã cobra R$${v1}, mas o ideal é R$${v2}. Ela vende ${v3} por mês. Dê um parecer técnico de mentora em 2 parágrafos.` }] }] })
+                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
                 });
 
                 const data = await response.json();
-                document.getElementById('txt').innerText = data.candidates[0].content.parts[0].text;
+                
+                if (data.candidates && data.candidates[0].content.parts[0].text) {
+                    aiText.innerText = data.candidates[0].content.parts[0].text;
+                } else {
+                    aiText.innerText = "Houve um ajuste na conta do Google. Verifique se os créditos gratuitos ainda estão ativos no AI Studio.";
+                }
             } catch (e) {
-                document.getElementById('txt').innerText = "Erro ao gerar parecer. Verifique sua chave no Google AI Studio.";
+                aiText.innerText = "Erro de conexão. Tente novamente em alguns segundos.";
             } finally {
-                document.getElementById('load').classList.add('hidden');
+                loading.classList.add('hidden');
             }
         }
     </script>
