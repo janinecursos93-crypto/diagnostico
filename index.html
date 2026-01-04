@@ -116,7 +116,7 @@
         let chart;
         async function callGemini(prompt) {
             // SUBSTITUA O TEXTO ABAIXO PELA SUA CHAVE
-            const apiKey = "AIzaSyAZE4KRWJx5jgsyEJuwUmoJBeGS7NXzNi8; 
+            const apiKey = "AIzaSyAZE4KRWJx5jgsyEJuwUmoJBeGS7NXzNi8"; 
             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
             const payload = {
                 contents: [{ parts: [{ text: prompt }] }],
@@ -150,3 +150,4 @@
     </script>
 </body>
 </html>
+
